@@ -1,5 +1,7 @@
 <template>
-<p>{{ $t('hello') }}</p>
+<div>
+  LoginView
+</div>
 </template>
 
 <script lang="ts">
@@ -8,7 +10,8 @@ import {
   Vue,
 } from 'vue-property-decorator';
 
+
 @Component
-export default class HelloI18n extends Vue {
+export default class LoginView extends Vue {
 }
 </script>

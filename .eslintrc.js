@@ -10,6 +10,12 @@ module.exports = {
   rules: {
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+
+    'import/prefer-default-export': 'off',
+    'no-restricted-syntax': 'off',
+    'no-continue': 'off',
+    camelcase: 'off',
+
     'max-len': [
       'warn',
       {
@@ -33,7 +39,7 @@ module.exports = {
     ],
     'operator-linebreak': [
       'warn',
-      'after',
+      'before',
     ],
     'object-property-newline': [
       'warn',
@@ -107,6 +113,26 @@ module.exports = {
     indent: [
       'warn',
       2,
+    ],
+    semi: [
+      'warn',
+      'always',
+      { omitLastInOneLineBlock: false },
+    ],
+    'key-spacing': [
+      'warn',
+      {
+        beforeColon: false,
+        afterColon: true,
+      },
+    ],
+    'space-before-function-paren': [
+      'warn',
+      {
+        anonymous: 'always',
+        named: 'never',
+        asyncArrow: 'always',
+      },
     ],
 
     '@typescript-eslint/no-empty-interface': ['off'],

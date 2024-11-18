@@ -1,31 +1,43 @@
 import Vue from 'vue';
 import VueRouter, { RouteConfig } from 'vue-router';
 
-import HomeView from '@/views/HomeView.vue';
-
 
 Vue.use(VueRouter);
 
-const routes: Array<RouteConfig> = [
+
+type SimpleRouteConfig = RouteConfig & { children?: SimpleRouteConfig[] };
+function createLazyRoute(path: SimpleRouteConfig) {
+  const result: RouteConfig = {
+    ...path,
+    component: () => import(`@/views/${path.name}View.vue`),
+  };
+  if (path.children) {
+    result.children = path.children.map(createLazyRoute);
+  }
+  return result;
+}
+
+
+// eslint-disable-next-line no-shadow
+export const enum RouteName {
+  Main = 'Main',
+  Login = 'Login',
+}
+
+
+const routes: Array<SimpleRouteConfig> = [
   {
     path: '/',
-    name: 'home',
-    component: HomeView,
+    name: RouteName.Main,
   },
   {
-    path: '/about',
-    name: 'about',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '@/views/AboutView.vue'),
+    path: '/login',
+    name: RouteName.Login,
   },
 ];
 
-const router = new VueRouter({
+export const router = new VueRouter({
   mode: 'history',
   base: process.env.BASE_URL,
-  routes,
+  routes: routes.map(createLazyRoute),
 });
-
-export default router;
