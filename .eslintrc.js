@@ -15,6 +15,8 @@ module.exports = {
     'no-restricted-syntax': 'off',
     'no-continue': 'off',
     camelcase: 'off',
+    'no-underscore-dangle': 'off',
+    'prefer-destructuring': 'off',
 
     'max-len': [
       'warn',

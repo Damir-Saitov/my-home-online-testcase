@@ -10,14 +10,17 @@ export type AuthLoginPostData = {
   username: string,
   password: string,
 };
-export type AuthLoginPostResult = { key: string };
+export type AuthLoginPostResult = {
+  employee_id: number,
+  key: string,
+};
 
 
 export function authLoginPost(
   data: AuthLoginPostData,
   config?: AxiosRequestConfig<AuthLoginPostData>,
 ) {
-  return api.postForm<AuthLoginPostResult>(
+  return api.post<AuthLoginPostResult>(
     authLoginUrl,
     data,
     Object.assign(config || {}, { $disableTrim: true }),

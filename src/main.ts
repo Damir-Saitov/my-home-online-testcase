@@ -2,6 +2,7 @@ import Vue from 'vue';
 import Quasar, { Notify } from 'quasar';
 import quasarLangRu from 'quasar/lang/ru';
 import 'quasar/dist/quasar.min.css';
+import '@quasar/extras/material-icons/material-icons.css';
 
 import App from '@/App.vue';
 import { router } from '@/router';
@@ -13,6 +14,21 @@ Vue.use(Quasar, {
   lang: quasarLangRu,
   components: [],
   plugins: { Notify },
+  config: {
+    brand: {
+      primary: '#44A248',
+      secondary: '#26A69A',
+      accent: '#9C27B0',
+
+      dark: '#1d1d1d',
+      'dark-page': '#121212',
+
+      positive: '#21BA45',
+      negative: '#C10015',
+      info: '#31CCEC',
+      warning: '#F2C037',
+    },
+  },
 });
 
 Vue.config.productionTip = false;

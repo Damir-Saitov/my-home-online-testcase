@@ -95,44 +95,67 @@ function parseServerError(status?: number): string {
   const statusString = status ? (` ${status}`) : '';
   return `серверная ошибка${statusString}. Ведутся технические работы`;
 }
-interface ErrorData {
-  message: string;
-  code: string;
-}
-function getErrorMessageFromArray(errors: ErrorData[], field?: string) {
+function getErrorMessageFromArray(errors: string[], field?: string) {
   const result: string[] = [];
   for (const error of errors) {
-    if (error && error.message) {
-      result.push(error.message);
+    if (error) {
+      result.push(error);
     }
   }
   return `${field}: ${result.join(', ')}`;
 }
+
 type MultipleErrorsData = {
-  [errorName: string]: ErrorData[];
+  [errorName: string]: string[];
 };
+function parseMultipleErrorsData(
+  data: MultipleErrorsData,
+  fieldTranslation?: Record<string, string>,
+) {
+  const result: string[] = [];
+  for (const [field, errors] of Object.entries(data)) {
+    if (!Array.isArray(errors)) {
+      continue;
+    }
+    result.push(getErrorMessageFromArray(errors, fieldTranslation?.[field] || field));
+  }
+  return result.join('\n');
+}
+
 function parseErrorData(data: unknown, fieldTranslation?: Record<string, string>): string {
   if (data && typeof data === 'object') {
     if (Array.isArray(data)) {
       return getErrorMessageFromArray(data);
     }
 
-    if ('detail' in data) {
+    const _data = data as Record<string, unknown>;
+    if ('detail' in _data) {
+      if ('data' in _data) {
+        if (
+          typeof _data.data === 'object'
+          && _data.data
+          && 'non_field_errors' in _data.data
+        ) {
+          const non_field_errors = (_data.data as { non_field_errors: string[] }).non_field_errors;
+          return (
+            Array.isArray(non_field_errors)
+              ? non_field_errors.join('\n')
+              : String(non_field_errors)
+          );
+        }
+
+        return parseMultipleErrorsData(
+          _data.data as MultipleErrorsData,
+          fieldTranslation,
+        );
+      }
       return String((data as { detail: unknown }).detail);
     }
 
-    const result: string[] = [];
-    for (const field of Object.values(data)) {
-      const errors = (data as MultipleErrorsData)[field];
-      if (!Array.isArray(errors)) {
-        continue;
-      }
-      result.push(getErrorMessageFromArray(errors, fieldTranslation?.[field] || field));
-    }
-    return result.join('\n');
+    return parseMultipleErrorsData(data as MultipleErrorsData, fieldTranslation);
   }
 
-  return typeof data === 'string' ? data : '';
+  return sliceWithEllipsis(String(data), 100);
 }
 
 function parseError(
@@ -175,12 +198,17 @@ function parseError(
 function showErrorMessage(
   error: Parameters<typeof parseError>['0'],
   premessage: Parameters<typeof parseError>['1'],
+  fieldTranslation?: Parameters<typeof parseError>['2'],
 ) {
   Notify?.create({
     position: 'top',
     timeout: 5000,
     type: 'negative',
-    message: parseError(error, premessage),
+    message: parseError(
+      error,
+      premessage,
+      fieldTranslation,
+    ),
   });
 }
 
@@ -276,7 +304,7 @@ export function createAxiosInstance(
 
 const qsOptions: IStringifyOptions = { arrayFormat: 'comma' };
 export const api = createAxiosInstance({
-  baseURL: `${process.env.VITE_APP_BASE_URL}/api`,
+  baseURL: new URL('api', process.env.VUE_APP_BASE_URL).toString(),
   timeout: 300000,
   paramsSerializer: {
     encode(params) {
