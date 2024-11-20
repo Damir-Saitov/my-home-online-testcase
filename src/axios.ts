@@ -17,7 +17,7 @@ import {
 // eslint-disable-next-line import/no-cycle
 import {
   store,
-  StoreActions,
+  StoreMutations,
 } from '@/store';
 import { sliceWithEllipsis } from '@/utils/sliceWithEllipsis';
 import { vueI18n } from '@/i18n';
@@ -248,7 +248,7 @@ async function nullErrorIfCancelOrUnauthorized(error: unknown) {
       type: 'negative',
       message: vueI18n.t('api.unauthorized') as string,
     });
-    await store.dispatch(StoreActions.logout);
+    store.commit(StoreMutations.logout);
     if (router.currentRoute.name !== 'Логин') {
       router.push({ name: RouteName.Login });
     }

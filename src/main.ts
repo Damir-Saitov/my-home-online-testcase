@@ -8,8 +8,8 @@ import 'quasar/dist/quasar.min.css';
 import '@quasar/extras/material-icons/material-icons.css';
 
 import App from '@/App.vue';
-import { router } from '@/router';
 import { store } from '@/store';
+import { router } from '@/router';
 import { vueI18n } from '@/i18n';
 
 

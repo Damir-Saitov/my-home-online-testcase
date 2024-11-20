@@ -11,11 +11,6 @@ export const StoreMutations = {
   login: 'login',
   logout: 'logout',
 } as const;
-export const StoreActions = {
-  login: 'login',
-  logout: 'logout',
-  tryLoadLogin: 'tryLoadLogin',
-} as const;
 
 // eslint-disable-next-line max-len
 const employeeIdLocalStorageKey = 'bXktaG9tZS1vbmxpbmUtdGVzdGNhc2U6ZW1wbG95ZWVJZExvY2FsU3RvcmFnZUtleQ==';
@@ -55,33 +50,24 @@ export const store = new Vuex.Store({
       localStorage.removeItem(keyLocalStorageKey);
     },
   },
-  actions: {
-    /* eslint-disable no-shadow */
-    [StoreActions.login](store, payload: AuthLoginPostResult) {
-      store.commit(StoreMutations.login, payload);
-    },
-    [StoreActions.logout](store) {
-      store.commit(StoreMutations.logout);
-    },
-    [StoreActions.tryLoadLogin](store) {
-      const employeeIdString = localStorage.getItem(employeeIdLocalStorageKey);
-      const key = localStorage.getItem(keyLocalStorageKey);
-      if (employeeIdString && key) {
-        const employeeId = Number(employeeIdString);
-        if (Number.isFinite(employeeId)) {
-          store.dispatch(
-            StoreActions.login,
-            {
-              employee_id: employeeId,
-              key,
-            },
-          );
-        } else {
-          store.dispatch(StoreActions.logout);
-        }
-      }
-    },
-    /* eslint-enable no-shadow */
-  },
+  actions: {},
   modules: {},
 });
+
+// Загрузка данных авторизации
+const employeeIdString = localStorage.getItem(employeeIdLocalStorageKey);
+const key = localStorage.getItem(keyLocalStorageKey);
+if (employeeIdString && key) {
+  const employeeId = Number(employeeIdString);
+  if (Number.isFinite(employeeId)) {
+    store.commit(
+      StoreMutations.login,
+      {
+        employee_id: employeeId,
+        key,
+      },
+    );
+  } else {
+    store.commit(StoreMutations.logout);
+  }
+}

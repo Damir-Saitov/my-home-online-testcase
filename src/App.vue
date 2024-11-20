@@ -12,24 +12,16 @@ import {
   QSpinnerHourglass,
 } from 'quasar';
 
-import {
-  store,
-  StoreActions,
-  StoreGetters,
-} from '@/store';
-import {
-  RouteName,
-  router,
-  setAccessGuard,
-} from '@/router';
+import { router } from '@/router';
 
+
+const loadingGroup = 'app-loading';
 
 @Component
 export default class LoginView extends Vue {
   loading = true;
 
-  created() {
-    const loadingGroup = 'app-loading';
+  beforeCreate() {
     Loading.show({
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
@@ -37,28 +29,12 @@ export default class LoginView extends Vue {
       spinnerSize: 100,
       group: loadingGroup,
     });
+  }
 
+  created() {
     router.onReady(() => {
-      store.dispatch(StoreActions.tryLoadLogin)
-        .then(() => {
-          if (store.getters[StoreGetters.logined]) {
-            if (router.currentRoute.name !== RouteName.Main) {
-              return router.push({ name: RouteName.Main });
-            }
-          } else if (router.currentRoute.name !== RouteName.Login) {
-            return router.push({ name: RouteName.Login });
-          }
-        })
-        .finally(() => {
-          setAccessGuard(
-            store,
-            StoreActions,
-            StoreGetters,
-          );
-
-          this.loading = false;
-          Loading.hide(loadingGroup);
-        });
+      this.loading = false;
+      Loading.hide(loadingGroup);
     });
   }
 }

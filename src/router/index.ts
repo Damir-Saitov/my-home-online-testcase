@@ -2,9 +2,10 @@ import Vue from 'vue';
 import VueRouter from 'vue-router';
 import type { RouteConfig } from 'vue-router';
 
-import type {
+// eslint-disable-next-line import/no-cycle
+import {
   store,
-  StoreActions,
+  StoreMutations,
   StoreGetters,
 } from '@/store';
 import { vueI18n } from '@/i18n';
@@ -49,49 +50,46 @@ const routes: Array<SimpleRouteConfig> = [
 export const router = new VueRouter({
   mode: 'history',
   base: process.env.BASE_URL,
-  routes: routes.map(createLazyRoute),
+  routes: [
+    ...routes.map(createLazyRoute),
+    {
+      path: '*',
+      redirect() {
+        if (store.getters[StoreGetters.logined]) {
+          return { name: RouteName.Main };
+        }
+        return { name: RouteName.Login };
+      },
+    },
+  ],
 });
 
 
-export function setAccessGuard(
-  _store: typeof store,
-  _StoreActions: typeof StoreActions,
-  _StoreGetters: typeof StoreGetters,
-) {
-  router.beforeEach((to, from, next) => {
-    if (to.fullPath === from.fullPath) {
-      next(false);
+router.beforeEach((to, from, next) => {
+  if ((to.fullPath === from.fullPath) && from.name) {
+    next(false);
 
-    } else if (!_store.getters[_StoreGetters.logined] && to.meta?.requiresAuth) {
-      _store.dispatch(_StoreActions.logout);
-      next({ name: RouteName.Login });
+  } else if (!store.getters[StoreGetters.logined] && to.meta?.requiresAuth) {
+    store.commit(StoreMutations.logout);
+    next({ name: RouteName.Login });
 
-    } else if (_store.getters[_StoreGetters.logined] && !to.meta?.requiresAuth) {
-      next({ name: RouteName.Main });
+  } else if (store.getters[StoreGetters.logined] && !to.meta?.requiresAuth) {
+    next({ name: RouteName.Main });
 
-    } else {
-      next();
-    }
-  });
-
-  router.addRoute({
-    path: '*',
-    redirect() {
-      if (_store.getters[_StoreGetters.logined]) {
-        return { name: RouteName.Main };
-      }
-      return { name: RouteName.Login };
-    },
-  });
-}
+  } else {
+    next();
+  }
+});
 
 
 router.afterEach((to) => {
   Vue.nextTick(() => {
+    const key = `RouteName.${to.name}`;
+    const title = vueI18n.t(key) as string;
     document.title = (
-      vueI18n.t(`RouteName.${to.name}`) as string
-      || vueI18n.t('RouteName._default') as string
-      || 'My Home Online'
+      title !== key
+        ? title
+        : vueI18n.t('RouteName._default') as string
     );
   });
 });

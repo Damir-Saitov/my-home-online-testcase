@@ -86,7 +86,7 @@ import { authLoginPost } from '@/api/auth';
 import { api } from '@/axios';
 import {
   store,
-  StoreActions,
+  StoreMutations,
 } from '@/store';
 import {
   RouteName,
@@ -134,7 +134,7 @@ export default class LoginView extends Vue {
     this.loading = true;
     authLoginPost(this.formData)
       .then((response) => {
-        store.dispatch(StoreActions.login, response.data);
+        store.commit(StoreMutations.login, response.data);
         router.push({ name: RouteName.Main });
       })
       .catch((error) => {
