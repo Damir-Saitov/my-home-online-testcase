@@ -9,15 +9,18 @@ import qs from 'qs';
 import type { IStringifyOptions } from 'qs';
 import { Notify } from 'quasar';
 
+// eslint-disable-next-line import/no-cycle
 import {
   router,
   RouteName,
 } from '@/router';
+// eslint-disable-next-line import/no-cycle
 import {
   store,
   StoreActions,
 } from '@/store';
 import { sliceWithEllipsis } from '@/utils/sliceWithEllipsis';
+import { vueI18n } from '@/i18n';
 
 
 // Пустой сигнал аборта
@@ -93,7 +96,7 @@ function removeEmptyUrlSearchParamsInterseption(requestConfig: InternalAxiosRequ
 // Парсинг ошибки
 function parseServerError(status?: number): string {
   const statusString = status ? (` ${status}`) : '';
-  return `серверная ошибка${statusString}. Ведутся технические работы`;
+  return `${vueI18n.t('api.serverErrorPart1')}${statusString}. ${vueI18n.t('api.serverErrorPart2')}`;
 }
 function getErrorMessageFromArray(errors: string[], field?: string) {
   const result: string[] = [];
@@ -163,20 +166,14 @@ function parseError(
   premessage?: string,
   fieldTranslation?: Record<string, string>,
 ) {
-  let message = 'программная ошибка, пожалуйста, обратитесь в поддержку';
+  let message = vueI18n.t('api.frontendError');
   if (axios.isAxiosError(error)) {
     if (error.response && error.response.status < 500) {
       try {
         message = parseErrorData(error.response.data, fieldTranslation);
       } catch (parsingError) {
-        console.error(
-          'Ошибка при обработке ошибки от сервера:',
-          parsingError,
-        );
-        console.error(
-          'Неверный формат ответ от сервера:',
-          error.response.data,
-        );
+        console.error(`${vueI18n.t('api.parsingError')}:`, parsingError);
+        console.error(`${vueI18n.t('api.wrongFormatError')}:`, error.response.data);
         message = parseServerError();
       }
     } else {
@@ -186,12 +183,14 @@ function parseError(
     const errorText = String((error as Error)?.stack || error);
     // Добавить 100 символов текста ошибки
     message = `${message} "${sliceWithEllipsis(errorText, 100)}"`;
-    console.error('Программная ошибка:', errorText);
+    console.error(`${vueI18n.t('api.someError')}:`, errorText);
   }
 
-  return premessage
-    ? (`${premessage}: ${message}`)
-    : message;
+  return (
+    premessage
+      ? (`${premessage}: ${message}`)
+      : message
+  );
 }
 
 
@@ -247,7 +246,7 @@ async function nullErrorIfCancelOrUnauthorized(error: unknown) {
       position: 'top',
       timeout: 5000,
       type: 'negative',
-      message: 'Учётные данные не были предоставлены',
+      message: vueI18n.t('api.unauthorized') as string,
     });
     await store.dispatch(StoreActions.logout);
     if (router.currentRoute.name !== 'Логин') {
@@ -268,7 +267,7 @@ export interface AxiosInstanceExtended extends AxiosInstance {
   parseError: typeof parseError;
   showErrorMessage: typeof showErrorMessage;
   eAbortController: typeof eAbortController;
-  setAuthorization: (accessToken: string) => void;
+  setAuthorization: (token: string) => void;
   removeAuthorization: () => void;
   // isAuthorized(): boolean;
 }
@@ -290,8 +289,8 @@ export function createAxiosInstance(
   result.showErrorMessage = showErrorMessage;
   result.eAbortController = eAbortController;
 
-  result.setAuthorization = (accessToken: string) => {
-    result.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
+  result.setAuthorization = (token) => {
+    result.defaults.headers.common.Authorization = `Token ${token}`;
   };
 
   result.removeAuthorization = () => {

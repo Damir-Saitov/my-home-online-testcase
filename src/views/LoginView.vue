@@ -84,6 +84,14 @@ import { required } from '@/quasar/formRules';
 import type { FormRule } from '@/quasar/formRules';
 import { authLoginPost } from '@/api/auth';
 import { api } from '@/axios';
+import {
+  store,
+  StoreActions,
+} from '@/store';
+import {
+  RouteName,
+  router,
+} from '@/router';
 
 
 @Component({
@@ -125,6 +133,10 @@ export default class LoginView extends Vue {
 
     this.loading = true;
     authLoginPost(this.formData)
+      .then((response) => {
+        store.dispatch(StoreActions.login, response.data);
+        router.push({ name: RouteName.Main });
+      })
       .catch((error) => {
         api.showErrorMessage(
           error,

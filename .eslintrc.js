@@ -17,6 +17,9 @@ module.exports = {
     camelcase: 'off',
     'no-underscore-dangle': 'off',
     'prefer-destructuring': 'off',
+    'padded-blocks': 'off',
+    'class-methods-use-this': 'off',
+    'consistent-return': 'off',
 
     'max-len': [
       'warn',

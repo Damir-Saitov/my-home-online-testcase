@@ -1,5 +1,8 @@
 import Vue from 'vue';
-import Quasar, { Notify } from 'quasar';
+import Quasar, {
+  Loading,
+  Notify,
+} from 'quasar';
 import quasarLangRu from 'quasar/lang/ru';
 import 'quasar/dist/quasar.min.css';
 import '@quasar/extras/material-icons/material-icons.css';
@@ -7,13 +10,16 @@ import '@quasar/extras/material-icons/material-icons.css';
 import App from '@/App.vue';
 import { router } from '@/router';
 import { store } from '@/store';
-import i18n from '@/i18n';
+import { vueI18n } from '@/i18n';
 
 
 Vue.use(Quasar, {
   lang: quasarLangRu,
   components: [],
-  plugins: { Notify },
+  plugins: {
+    Notify,
+    Loading,
+  },
   config: {
     brand: {
       primary: '#44A248',
@@ -35,6 +41,6 @@ Vue.config.productionTip = false;
 new Vue({
   router,
   store,
-  i18n,
+  i18n: vueI18n,
   render: (h) => h(App),
 }).$mount('#app');
