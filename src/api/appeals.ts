@@ -8,7 +8,7 @@ export type AppealsGetData = {
   page_size: number,
   page: number,
   search?: string,
-  premise_id?: Appeal['premise'],
+  premise_id?: NonNullable<Appeal['premise']>['id'],
 };
 export type AppealsGetResult = {
   count: number,

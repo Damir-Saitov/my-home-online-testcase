@@ -11,6 +11,9 @@
     "methods": {
       "getAppeals": {
         "error": "Не удалось получить список заявок"
+      },
+      "geoUserPremisesGet": {
+        "error": "Не удалось получить список домов"
       }
     }
   }
@@ -31,6 +34,7 @@
     <div class="col-6">
       <QInput
         class="full-width"
+        clearable
         :label="$t('template.search')"
         :value="filters.search"
         @input="setFilterSearch"
@@ -45,7 +49,10 @@
     <div class="col-6">
       <QSelect
         class="full-width"
+        clearable
         :label="$t('template.premise')"
+        :loading="geoUserPremisesGetLoading"
+        :options="geoUserPremisesOptions"
         @input="updateTable()"
         v-model="filters.premise_id"
       />
@@ -81,7 +88,7 @@
         :max-pages="6"
         :max="Math.ceil(pagination.rowsNumber / pagination.rowsPerPage)"
         :value="pagination.page"
-        @input="updateTable({ page: $event })"
+        @input="setPaginationPage"
       />
     </div>
   </div>
@@ -111,7 +118,9 @@ import type {
   Appeal,
   Pagination,
   Option,
+  Premise,
 } from '@/types';
+import { geoUserPremisesGet } from '@/api/geo';
 
 
 interface UpdateTableParams {
@@ -173,8 +182,14 @@ export default class MainView extends Vue {
 
   filters = {
     search: undefined as AppealsGetData['search'],
-    premise_id: undefined as AppealsGetData['premise_id'],
+    premise_id: undefined as undefined | Option<NonNullable<AppealsGetData['premise_id']>>,
   };
+
+  geoUserPremisesGetAbortController = undefined as undefined | AbortController;
+
+  geoUserPremisesGetLoading = true;
+
+  geoUserPremisesOptions = undefined as undefined | Option<Premise['id']>[];
 
 
   get appealsCurrentPaginationText(): string {
@@ -200,7 +215,7 @@ export default class MainView extends Vue {
         page_size: this.pagination.rowsPerPage,
 
         search: this.filters.search?.trim(),
-        premise_id: this.filters.premise_id,
+        premise_id: this.filters.premise_id?.value,
       },
       { signal: this.getAppealsAbortController.signal },
     )
@@ -225,6 +240,7 @@ export default class MainView extends Vue {
 
 
   updateTable(params?: UpdateTableParams) {
+    console.log(params);
     const {
       rowsPerPage,
       page,
@@ -246,11 +262,53 @@ export default class MainView extends Vue {
     this.updateTableDebounced();
   }
 
+  setFilterPremiseId(value: Option<InstanceType<typeof MainView>['filters']['premise_id']>) {
+    this.filters.premise_id = value.value;
+    this.updateTable();
+  }
+
+  setPaginationPage(value: Pagination['page']) {
+    if (value !== this.pagination.page) {
+      this.updateTable({ page: value });
+    }
+  }
+
 
   created() {
     this.rowsPerPageOptions = rowsPerPageOptions;
     this.appeals = [];
     this.getAppeals();
+
+    this.geoUserPremisesGetAbortController = new AbortController();
+    this.geoUserPremisesOptions = undefined;
+    geoUserPremisesGet(undefined, { signal: this.geoUserPremisesGetAbortController.signal })
+      .then((response) => {
+        const premises = response.data.results;
+        this.geoUserPremisesOptions = new Array(premises.length);
+
+        for (let index = 0; index < premises.length; index++) {
+          this.geoUserPremisesOptions[index] = {
+            label: premises[index].full_address,
+            value: premises[index].id,
+          };
+        }
+
+        this.geoUserPremisesGetLoading = false;
+        this.$forceUpdate();
+      })
+      .catch((error) => {
+        if (api.isCancel(error)) {
+          return;
+        }
+        api.showErrorMessage(error, this.$t('methods.geoUserPremisesGet.error') as string);
+        this.geoUserPremisesGetLoading = false;
+      });
+  }
+
+  beforeDestroy() {
+    this.getAppealsAbortController?.abort();
+    this.geoUserPremisesGetAbortController?.abort();
+    this.updateTableDebounced.cancel();
   }
 }
 </script>

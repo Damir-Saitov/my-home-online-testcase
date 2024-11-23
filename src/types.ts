@@ -15,13 +15,42 @@ export interface Option<T> {
 }
 
 
+export interface Premise {
+  id: string,
+  title: string,
+  kind: string,
+  thoroughfare: {
+    id: string,
+    name: string,
+    kind: string,
+  },
+  locality: {
+    id: string,
+    name: string,
+    kind: string,
+    phone_code1: string,
+    phone_code2: string,
+  },
+  address: string,
+  cadaster_address: string,
+  full_address: string,
+  short_address: string,
+  manage_organization: {
+    id: number,
+    name: string,
+  },
+  area: string,
+  apartments_area: string,
+  apartments_count: number,
+  cadaster_numbers: string[],
+  customer_premise_id: number,
+  is_deleted: boolean,
+}
 export interface Appeal {
   id: string,
   number: number,
   created_at: string,
-  premise: null | {
-    address: string,
-  },
+  premise: null | Premise,
   apartment: null | {
     id: number,
     label: string,
