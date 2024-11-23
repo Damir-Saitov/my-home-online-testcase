@@ -2,6 +2,9 @@
 {
   "ru": {
     "template": {
+      "create": "Создать",
+      "search": "Поиск (№ заявки, название)",
+      "premise": "Дом",
       "appealsCurrentPaginationText": "{first} – {last} из {count}",
       "appealsCount": "0 записей | {n} запись | {n} записи | {n} записей"
     },
@@ -16,11 +19,45 @@
 
 <template>
 <div class="main-view">
+  <div class="text-right">
+    <QBtn
+      color="primary"
+      type="submit"
+      :label="$t('template.create')"
+    />
+  </div>
+
+  <div class="row q-col-gutter-md">
+    <div class="col-6">
+      <QInput
+        class="full-width"
+        :label="$t('template.search')"
+        :value="filters.search"
+        @input="setFilterSearch"
+        @blur="filters.search = filters.search?.trim()"
+      >
+        <template #append>
+          <QIcon name="search" />
+        </template>
+      </QInput>
+    </div>
+
+    <div class="col-6">
+      <QSelect
+        class="full-width"
+        :label="$t('template.premise')"
+        @input="updateTable()"
+        v-model="filters.premise_id"
+      />
+    </div>
+  </div>
+
   <AppealsTable
     :loading="loading"
     :data="appeals"
     :pagination="pagination"
   />
+
   <div class="mt-36px flex content-center">
     <div class="mr-auto">
       {{ appealsCurrentPaginationText }}
@@ -63,16 +100,25 @@ import {
   QDialog,
   QIcon,
   QPagination,
+  debounce,
 } from 'quasar';
 
 import AppealsTable from '@/components/MainView/AppealsTable.vue';
 import { appealsGet } from '@/api/appeals';
+import type { AppealsGetData } from '@/api/appeals';
 import { api } from '@/axios';
 import type {
   Appeal,
   Pagination,
   Option,
 } from '@/types';
+
+
+interface UpdateTableParams {
+  page?: Pagination['page'],
+  rowsPerPage?: Pagination['rowsPerPage'],
+}
+const eparams: UpdateTableParams = {};
 
 
 const rowsPerPageOptions: Option<number>[] = [
@@ -125,6 +171,11 @@ export default class MainView extends Vue {
 
   rowsPerPageOptions = undefined as undefined | typeof rowsPerPageOptions;
 
+  filters = {
+    search: undefined as AppealsGetData['search'],
+    premise_id: undefined as AppealsGetData['premise_id'],
+  };
+
 
   get appealsCurrentPaginationText(): string {
     const last = this.pagination.page * this.pagination.rowsPerPage;
@@ -147,6 +198,9 @@ export default class MainView extends Vue {
       {
         page: this.pagination.page,
         page_size: this.pagination.rowsPerPage,
+
+        search: this.filters.search?.trim(),
+        premise_id: this.filters.premise_id,
       },
       { signal: this.getAppealsAbortController.signal },
     )
@@ -170,26 +224,11 @@ export default class MainView extends Vue {
   }
 
 
-  onTableRequest(event: { pagination: Pagination }) {
-    const pagination = event.pagination;
-    const params: Parameters<InstanceType<typeof MainView>['updateTable']>['0'] = {};
-    if (pagination.page !== this.pagination.page) {
-      params.page = pagination.page;
-    }
-    if (pagination.rowsPerPage !== this.pagination.rowsPerPage) {
-      params.rowsPerPage = pagination.rowsPerPage;
-    }
-    this.updateTable(params);
-  }
-
-  updateTable(params: {
-    page?: Pagination['page'],
-    rowsPerPage?: Pagination['rowsPerPage'],
-  }) {
+  updateTable(params?: UpdateTableParams) {
     const {
       rowsPerPage,
       page,
-    } = params;
+    } = params || eparams;
 
     if (rowsPerPage) {
       this.pagination.rowsPerPage = rowsPerPage;
@@ -197,6 +236,14 @@ export default class MainView extends Vue {
 
     this.pagination.page = page || 1;
     this.getAppeals();
+  }
+
+  // eslint-disable-next-line prefer-arrow-callback
+  updateTableDebounced = debounce(this.updateTable, 300);
+
+  setFilterSearch(value: InstanceType<typeof MainView>['filters']['search']) {
+    this.filters.search = value;
+    this.updateTableDebounced();
   }
 
 
