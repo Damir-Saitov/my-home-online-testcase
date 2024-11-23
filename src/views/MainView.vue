@@ -63,6 +63,7 @@
     :loading="loading"
     :data="appeals"
     :pagination="pagination"
+    @click:row-number="openEditAppealDialog"
   />
 
   <div class="mt-36px flex content-center">
@@ -191,6 +192,10 @@ export default class MainView extends Vue {
 
   geoUserPremisesOptions = undefined as undefined | Option<Premise['id']>[];
 
+  editAppealDialogAppeal = undefined as undefined | Appeal;
+
+  editAppealDialogVisible = false;
+
 
   get appealsCurrentPaginationText(): string {
     const last = this.pagination.page * this.pagination.rowsPerPage;
@@ -240,7 +245,6 @@ export default class MainView extends Vue {
 
 
   updateTable(params?: UpdateTableParams) {
-    console.log(params);
     const {
       rowsPerPage,
       page,
@@ -273,10 +277,19 @@ export default class MainView extends Vue {
     }
   }
 
+  openEditAppealDialog(appeal: Appeal) {
+    this.editAppealDialogAppeal = appeal;
+    this.editAppealDialogVisible = true;
+    console.log(appeal);
+  }
+
 
   created() {
+    // Убирание ошибки в консоли
+    this.editAppealDialogAppeal = undefined;
     this.rowsPerPageOptions = rowsPerPageOptions;
     this.appeals = [];
+
     this.getAppeals();
 
     this.geoUserPremisesGetAbortController = new AbortController();

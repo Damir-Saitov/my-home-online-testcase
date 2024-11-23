@@ -25,9 +25,12 @@
 >
   <template #body-cell-number="props">
     <q-td :props="props">
-      <div class="bg-primary text-white text-center number">
-        {{ props.value }}
-      </div>
+      <QBtn
+        class="full-width"
+        color="primary"
+        :label="props.value"
+        @click="$emit('click:row-number', props.row)"
+      />
     </q-td>
   </template>
 </QTable>
@@ -41,6 +44,7 @@ import {
 import {
   QTable,
   QTd,
+  QBtn,
 } from 'quasar';
 import { Appeal } from '@/types';
 
@@ -49,6 +53,7 @@ import { Appeal } from '@/types';
   components: {
     QTable,
     QTd,
+    QBtn,
   },
 })
 export default class AppealsTable extends Vue {
@@ -130,12 +135,6 @@ export default class AppealsTable extends Vue {
 }
 </script>
 
-<style scoped>
-.number {
-  padding: 4px 14px;
-  border-radius: 4px;
-}
-</style>
 <style>
 .table th,
 .table td {
