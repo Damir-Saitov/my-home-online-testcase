@@ -23,29 +23,6 @@ import { sliceWithEllipsis } from '@/utils/sliceWithEllipsis';
 import { vueI18n } from '@/i18n';
 
 
-// Пустой сигнал аборта
-function returnFalse() {
-  return false;
-}
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-function efunction() {}
-const eSignal = Object.freeze({
-  aborted: false,
-  onabort: efunction,
-  reason: undefined,
-  throwIfAborted: efunction,
-  any: () => eSignal,
-  addEventListener: efunction,
-  removeEventListener: efunction,
-  dispatchEvent: returnFalse,
-}) as AbortSignal;
-
-const eAbortController = Object.freeze({
-  abort: efunction,
-  signal: eSignal,
-}) as AbortController;
-
-
 // Дополнительные поля и функции
 function isCancel(error: unknown): boolean {
   return (
@@ -96,7 +73,7 @@ function removeEmptyUrlSearchParamsInterseption(requestConfig: InternalAxiosRequ
 // Парсинг ошибки
 function parseServerError(status?: number): string {
   const statusString = status ? (` ${status}`) : '';
-  return `${vueI18n.t('api.serverErrorPart1')}${statusString}. ${vueI18n.t('api.serverErrorPart2')}`;
+  return vueI18n.t('api.serverError', { status: statusString }) as string;
 }
 function getErrorMessageFromArray(errors: string[], field?: string) {
   const result: string[] = [];
@@ -266,7 +243,6 @@ export interface AxiosInstanceExtended extends AxiosInstance {
   isCancel: typeof isCancel;
   parseError: typeof parseError;
   showErrorMessage: typeof showErrorMessage;
-  eAbortController: typeof eAbortController;
   setAuthorization: (token: string) => void;
   removeAuthorization: () => void;
   // isAuthorized(): boolean;
@@ -287,7 +263,6 @@ export function createAxiosInstance(
   result.isCancel = isCancel;
   result.parseError = parseError;
   result.showErrorMessage = showErrorMessage;
-  result.eAbortController = eAbortController;
 
   result.setAuthorization = (token) => {
     result.defaults.headers.common.Authorization = `Token ${token}`;
@@ -305,10 +280,8 @@ const qsOptions: IStringifyOptions = { arrayFormat: 'comma' };
 export const api = createAxiosInstance({
   baseURL: new URL('api', process.env.VUE_APP_BASE_URL).toString(),
   timeout: 300000,
-  paramsSerializer: {
-    encode(params) {
-      return qs.stringify(params, qsOptions);
-    },
+  paramsSerializer(params) {
+    return qs.stringify(params, qsOptions);
   },
 });
 

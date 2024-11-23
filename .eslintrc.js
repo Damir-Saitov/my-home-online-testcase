@@ -20,6 +20,7 @@ module.exports = {
     'padded-blocks': 'off',
     'class-methods-use-this': 'off',
     'consistent-return': 'off',
+    'no-plusplus': 'off',
 
     'max-len': [
       'warn',
