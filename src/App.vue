@@ -59,7 +59,26 @@ body {
 .mt-36px {
   margin-top: 36px;
 }
+.mb-24px {
+  margin-bottom: 24px;
+}
+.mb-32px {
+  margin-bottom: 32px;
+}
 .mr-auto {
   margin-right: auto;
+}
+
+.px-32px {
+  padding-left: 32px;
+  padding-right: 32px;
+}
+.py-24px {
+  padding-top: 24px;
+  padding-bottom: 24px;
+}
+
+.text-16px {
+  font-size: 16px;
 }
 </style>

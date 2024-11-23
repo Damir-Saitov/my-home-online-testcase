@@ -11,9 +11,6 @@
     "methods": {
       "getAppeals": {
         "error": "Не удалось получить список заявок"
-      },
-      "geoUserPremisesGet": {
-        "error": "Не удалось получить список домов"
       }
     }
   }
@@ -27,6 +24,11 @@
       color="primary"
       type="submit"
       :label="$t('template.create')"
+      @click="addAppealDialogVisible = true"
+    />
+    <AddAppealDialog
+      @add="updateTable()"
+      v-model="addAppealDialogVisible"
     />
   </div>
 
@@ -47,12 +49,10 @@
     </div>
 
     <div class="col-6">
-      <QSelect
+      <PremiseSelect
         class="full-width"
         clearable
         :label="$t('template.premise')"
-        :loading="geoUserPremisesGetLoading"
-        :options="geoUserPremisesOptions"
         @input="updateTable()"
         v-model="filters.premise_id"
       />
@@ -119,9 +119,9 @@ import type {
   Appeal,
   Pagination,
   Option,
-  Premise,
 } from '@/types';
-import { geoUserPremisesGet } from '@/api/geo';
+import PremiseSelect from '@/components/PremiseSelect.vue';
+import AddAppealDialog from '@/components/MainView/AddAppealDialog.vue';
 
 
 interface UpdateTableParams {
@@ -164,6 +164,8 @@ const rowsPerPageOptions: Option<number>[] = [
     QPagination,
 
     AppealsTable,
+    PremiseSelect,
+    AddAppealDialog,
   },
 })
 export default class MainView extends Vue {
@@ -186,11 +188,7 @@ export default class MainView extends Vue {
     premise_id: undefined as undefined | Option<NonNullable<AppealsGetData['premise_id']>>,
   };
 
-  geoUserPremisesGetAbortController = undefined as undefined | AbortController;
-
-  geoUserPremisesGetLoading = true;
-
-  geoUserPremisesOptions = undefined as undefined | Option<Premise['id']>[];
+  addAppealDialogVisible = false;
 
   editAppealDialogAppeal = undefined as undefined | Appeal;
 
@@ -291,36 +289,10 @@ export default class MainView extends Vue {
     this.appeals = [];
 
     this.getAppeals();
-
-    this.geoUserPremisesGetAbortController = new AbortController();
-    this.geoUserPremisesOptions = undefined;
-    geoUserPremisesGet(undefined, { signal: this.geoUserPremisesGetAbortController.signal })
-      .then((response) => {
-        const premises = response.data.results;
-        this.geoUserPremisesOptions = new Array(premises.length);
-
-        for (let index = 0; index < premises.length; index++) {
-          this.geoUserPremisesOptions[index] = {
-            label: premises[index].full_address,
-            value: premises[index].id,
-          };
-        }
-
-        this.geoUserPremisesGetLoading = false;
-        this.$forceUpdate();
-      })
-      .catch((error) => {
-        if (api.isCancel(error)) {
-          return;
-        }
-        api.showErrorMessage(error, this.$t('methods.geoUserPremisesGet.error') as string);
-        this.geoUserPremisesGetLoading = false;
-      });
   }
 
   beforeDestroy() {
     this.getAppealsAbortController?.abort();
-    this.geoUserPremisesGetAbortController?.abort();
     this.updateTableDebounced.cancel();
   }
 }

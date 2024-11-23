@@ -46,17 +46,20 @@ export interface Premise {
   customer_premise_id: number,
   is_deleted: boolean,
 }
+
+export interface Apartment {
+  id: number,
+  label: string,
+  number: string,
+  object_type: string,
+}
+
 export interface Appeal {
   id: string,
   number: number,
   created_at: string,
   premise: null | Premise,
-  apartment: null | {
-    id: number,
-    label: string,
-    number: string,
-    object_type: string,
-  },
+  apartment: null | Apartment,
   applicant: {
     email: string,
     first_name: string,

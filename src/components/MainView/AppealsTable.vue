@@ -46,7 +46,8 @@ import {
   QTd,
   QBtn,
 } from 'quasar';
-import { Appeal } from '@/types';
+
+import type { Appeal } from '@/types';
 
 
 @Component({
