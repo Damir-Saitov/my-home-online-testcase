@@ -1,6 +1,10 @@
 <i18n>
 {
   "ru": {
+    "template": {
+      "appealsCurrentPaginationText": "{first} – {last} из {count}",
+      "appealsCount": "0 записей | {n} запись | {n} записи | {n} записей"
+    },
     "methods": {
       "getAppeals": {
         "error": "Не удалось получить список заявок"
@@ -13,12 +17,37 @@
 <template>
 <div class="main-view">
   <AppealsTable
-    v-if="appeals"
     :loading="loading"
     :data="appeals"
-    :pagination.sync="pagination"
-    @request="onTableRequest"
+    :pagination="pagination"
   />
+  <div class="mt-36px flex content-center">
+    <div class="mr-auto">
+      {{ appealsCurrentPaginationText }}
+      <QSelect
+        class="inline-flex"
+        :options="rowsPerPageOptions"
+        :value="pagination.rowsPerPage"
+        @input="updateTable({ rowsPerPage: $event.value })"
+      />
+    </div>
+
+    <div>
+      <QPagination
+        boundary-numbers
+        boundary-links
+        direction-links
+        round
+        padding="0.5em"
+        color="grey-7"
+        active-color="primary"
+        :max-pages="6"
+        :max="Math.ceil(pagination.rowsNumber / pagination.rowsPerPage)"
+        :value="pagination.page"
+        @input="updateTable({ page: $event })"
+      />
+    </div>
+  </div>
 </div>
 </template>
 
@@ -33,6 +62,7 @@ import {
   QBtn,
   QDialog,
   QIcon,
+  QPagination,
 } from 'quasar';
 
 import AppealsTable from '@/components/MainView/AppealsTable.vue';
@@ -41,8 +71,32 @@ import { api } from '@/axios';
 import type {
   Appeal,
   Pagination,
+  Option,
 } from '@/types';
 
+
+const rowsPerPageOptions: Option<number>[] = [
+  {
+    label: '10',
+    value: 10,
+  },
+  {
+    label: '20',
+    value: 20,
+  },
+  {
+    label: '30',
+    value: 30,
+  },
+  {
+    label: '40',
+    value: 40,
+  },
+  {
+    label: '50',
+    value: 50,
+  },
+];
 
 @Component({
   components: {
@@ -51,6 +105,7 @@ import type {
     QBtn,
     QDialog,
     QIcon,
+    QPagination,
 
     AppealsTable,
   },
@@ -68,11 +123,19 @@ export default class MainView extends Vue {
 
   appeals = undefined as undefined | Appeal[];
 
+  rowsPerPageOptions = undefined as undefined | typeof rowsPerPageOptions;
 
-  created() {
-    // Убирает ошибку рендера
-    this.appeals = undefined;
-    this.getAppeals();
+
+  get appealsCurrentPaginationText(): string {
+    const last = this.pagination.page * this.pagination.rowsPerPage;
+    return this.$t(
+      'template.appealsCurrentPaginationText',
+      {
+        first: String(last - this.pagination.rowsPerPage + 1),
+        last: String(Math.min(last, this.pagination.rowsNumber)),
+        count: this.$tc('template.appealsCount', this.pagination.rowsNumber),
+      },
+    ) as string;
   }
 
   getAppeals() {
@@ -88,6 +151,10 @@ export default class MainView extends Vue {
       { signal: this.getAppealsAbortController.signal },
     )
       .then((response) => {
+        if (response.config.signal !== this.getAppealsAbortController?.signal) {
+          return;
+        }
+
         this.appeals = response.data.results;
         this.pagination.rowsNumber = response.data.count;
         this.loading = false;
@@ -131,6 +198,13 @@ export default class MainView extends Vue {
     this.pagination.page = page || 1;
     this.getAppeals();
   }
+
+
+  created() {
+    this.rowsPerPageOptions = rowsPerPageOptions;
+    this.appeals = [];
+    this.getAppeals();
+  }
 }
 </script>
 
@@ -138,5 +212,6 @@ export default class MainView extends Vue {
 .main-view {
   overflow-y: auto;
   max-height: 100%;
+  padding: 10px 20px;
 }
 </style>

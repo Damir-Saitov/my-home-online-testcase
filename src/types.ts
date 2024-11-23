@@ -9,6 +9,11 @@ export interface Pagination {
   rowsNumber: NonNullable<QTablePagination['rowsNumber']>,
 }
 
+export interface Option<T> {
+  label: string,
+  value: T,
+}
+
 
 export interface Appeal {
   id: string,

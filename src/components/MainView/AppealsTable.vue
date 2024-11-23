@@ -15,11 +15,22 @@
 
 <template>
 <QTable
+  class="table"
+  flat
+  hide-pagination
   row-key="id"
   :columns="columns"
   v-bind="$attrs"
   v-on="$listeners"
-/>
+>
+  <template #body-cell-number="props">
+    <q-td :props="props">
+      <div class="bg-primary text-white text-center number">
+        {{ props.value }}
+      </div>
+    </q-td>
+  </template>
+</QTable>
 </template>
 
 <script lang="ts">
@@ -27,11 +38,19 @@ import {
   Component,
   Vue,
 } from 'vue-property-decorator';
-import { QTable } from 'quasar';
+import {
+  QTable,
+  QTd,
+} from 'quasar';
 import { Appeal } from '@/types';
 
 
-@Component({ components: { QTable } })
+@Component({
+  components: {
+    QTable,
+    QTd,
+  },
+})
 export default class AppealsTable extends Vue {
   get columns(): NonNullable<QTable['columns']> {
     return [
@@ -39,13 +58,15 @@ export default class AppealsTable extends Vue {
         label: '№',
         name: 'number',
         field: 'number',
-        align: 'right',
+        align: 'left',
+        headerClasses: 'text-primary',
       },
       {
         label: this.$t('columns.created_at') as string,
         name: 'created_at',
         field: 'created_at',
-        align: 'right',
+        align: 'left',
+        headerClasses: 'text-primary',
       },
       {
         label: this.$t('columns.address') as string,
@@ -54,7 +75,8 @@ export default class AppealsTable extends Vue {
           const address = appeal.premise?.address;
           return `${address ? `${address}, ` : ' '}${appeal.apartment?.label || ''}`;
         },
-        align: 'right',
+        align: 'left',
+        headerClasses: 'text-primary',
       },
       {
         label: this.$t('columns.applicant') as string,
@@ -77,19 +99,22 @@ export default class AppealsTable extends Vue {
           }
           return fullName.join(' ');
         },
-        align: 'right',
+        align: 'left',
+        headerClasses: 'text-primary',
       },
       {
         label: this.$t('columns.description') as string,
         name: 'description',
         field: 'description',
-        align: 'right',
+        align: 'left',
+        headerClasses: 'text-primary',
       },
       {
         label: this.$t('columns.due_date') as string,
         name: 'due_date',
         field: 'due_date',
-        align: 'right',
+        align: 'left',
+        headerClasses: 'text-primary',
       },
       {
         label: this.$t('columns.status') as string,
@@ -97,9 +122,23 @@ export default class AppealsTable extends Vue {
         field(appeal: Appeal) {
           return appeal.status.name;
         },
-        align: 'right',
+        align: 'left',
+        headerClasses: 'text-primary',
       },
     ];
   }
 }
 </script>
+
+<style scoped>
+.number {
+  padding: 4px 14px;
+  border-radius: 4px;
+}
+</style>
+<style>
+.table th,
+.table td {
+  font-size: 14px !important;
+}
+</style>

@@ -48,7 +48,18 @@ body {
   font-size: 14px;
 }
 
+
+.inline-flex {
+  display: inline-flex;
+}
+
 .mt-28px {
   margin-top: 28px;
+}
+.mt-36px {
+  margin-top: 36px;
+}
+.mr-auto {
+  margin-right: auto;
 }
 </style>
