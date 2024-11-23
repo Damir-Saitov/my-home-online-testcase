@@ -91,6 +91,7 @@ export default class MainView extends Vue {
         this.appeals = response.data.results;
         this.pagination.rowsNumber = response.data.count;
         this.loading = false;
+        this.$forceUpdate();
       })
       .catch((error) => {
         if (api.isCancel(error)) {
