@@ -16,6 +16,12 @@
         "username": "Телефон",
         "description": "Описание заявки"
       }
+    },
+    "methods": {
+      "send": {
+        "success": "Заявка создана",
+        "error": "Не удалось создать заявку"
+      }
     }
   }
 }
@@ -113,6 +119,7 @@
           color="primary"
           type="submit"
           :label="$t('template.create')"
+          :loading="loading"
         />
       </div>
     </QForm>
@@ -133,6 +140,8 @@ import {
   QInput,
   QSelect,
   QForm,
+  Notify,
+  date,
 } from 'quasar';
 
 import type {
@@ -144,7 +153,35 @@ import type { FormRule } from '@/quasar/formRules';
 import DateTimePicker from '@/components/DateTimePicker.vue';
 import PremiseSelect from '@/components/PremiseSelect.vue';
 import ApartmentSelect from '@/components/ApartmentSelect.vue';
+import { appealsPost } from '@/api/appeals';
+import { api } from '@/axios';
+import {
+  BACKEND_DATETIME_FORMAT, FRONTEND_DATETIME_FORMAT,
+} from '@/constants';
 
+
+interface FormDataType {
+  premise_id: null | Option<Premise['id']>,
+  apartment_id: null | Option<Apartment['id']>,
+  due_date: null | string,
+  last_name: string,
+  first_name: string,
+  patronymic_name: string,
+  username: string,
+  description: string,
+}
+const initFormData: FormDataType = {
+  premise_id: null,
+  apartment_id: null,
+  due_date: null,
+
+  last_name: '',
+  first_name: '',
+  patronymic_name: '',
+  username: '',
+
+  description: '',
+};
 
 @Component({
   components: {
@@ -164,18 +201,7 @@ export default class AddAppealDialog extends Vue {
   @Prop({ required: true })
   value!: boolean;
 
-  formData = {
-    premise_id: null as null | Option<Premise['id']>,
-    apartment_id: null as null | Option<Apartment['id']>,
-    due_date: null as null | string,
-
-    last_name: '',
-    first_name: '',
-    patronymic_name: '',
-    username: '',
-
-    description: '',
-  };
+  formData = { ...initFormData };
 
   formRules: {[key in keyof typeof this.formData]?: FormRule[]} = {};
 
@@ -198,6 +224,9 @@ export default class AddAppealDialog extends Vue {
 
   updateVisible(value: typeof this.value) {
     this.$emit('input', value);
+    if (!value) {
+      this.formData = { ...initFormData };
+    }
   }
 
   hide() {
@@ -210,7 +239,40 @@ export default class AddAppealDialog extends Vue {
     }
     this.loading = true;
 
-    // this.$emit('add');
+    appealsPost({
+      premise_id: this.formData.premise_id?.value,
+      apartment_id: this.formData.apartment_id?.value,
+      due_date: (
+        this.formData.due_date
+          ? date.formatDate(
+            date.extractDate(this.formData.due_date, FRONTEND_DATETIME_FORMAT),
+            BACKEND_DATETIME_FORMAT,
+          )
+          : undefined
+      ),
+      description: this.formData.description,
+      applicant: {
+        last_name: this.formData.last_name,
+        first_name: this.formData.first_name,
+        patronymic_name: this.formData.patronymic_name,
+        username: this.formData.username,
+      },
+    })
+      .then(() => {
+        this.$emit('add');
+        this.loading = false;
+        Notify.create({
+          position: 'top',
+          timeout: 3000,
+          type: 'positive',
+          message: this.$t('methods.send.success') as string,
+        });
+        this.hide();
+      })
+      .catch((error) => {
+        api.showErrorMessage(error, this.$t('methods.send.error') as string);
+        this.loading = false;
+      });
   }
 }
 </script>
