@@ -274,7 +274,3 @@ export default class AddAppealDialog extends Vue {
   }
 }
 </script>
-
-<style scoped>
-
-</style>

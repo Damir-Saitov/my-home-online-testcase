@@ -113,7 +113,3 @@ export default class PremiseSelect extends Vue {
   }
 }
 </script>
-
-<style scoped>
-
-</style>

@@ -129,7 +129,3 @@ export default class ApartmentSelect extends Vue {
   }
 }
 </script>
-
-<style scoped>
-
-</style>

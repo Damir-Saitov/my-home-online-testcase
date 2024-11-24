@@ -113,7 +113,3 @@ export default class DateTimePicker extends Vue {
   }
 }
 </script>
-
-<style scoped>
-
-</style>

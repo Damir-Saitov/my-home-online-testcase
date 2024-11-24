@@ -40,7 +40,6 @@ export type AppealsPostData = {
   description?: string,
   due_date?: string,
 };
-// export type AppealsPostResult = {};
 
 export function appealsPost(
   data: AppealsPostData,
@@ -66,7 +65,6 @@ export type AppealsPatchData = {
   description?: string,
   due_date?: string,
 };
-// export type AppealsPatchResult = {};
 
 export function appealsPatch(
   id: Appeal['id'],
