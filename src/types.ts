@@ -57,7 +57,7 @@ export interface Apartment {
 export interface Appeal {
   id: string,
   number: number,
-  created_at: string,
+  created_at: null | string,
   premise: null | Premise,
   apartment: null | Apartment,
   applicant: {

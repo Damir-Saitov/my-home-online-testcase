@@ -45,10 +45,16 @@ import {
   QTable,
   QTd,
   QBtn,
+  date,
 } from 'quasar';
 
 import type { Appeal } from '@/types';
+import { FRONTEND_DATETIME_FORMAT } from '@/constants';
 
+
+function formatDate(value: Appeal['created_at']) {
+  return value && date.formatDate(value, FRONTEND_DATETIME_FORMAT);
+}
 
 @Component({
   components: {
@@ -73,6 +79,7 @@ export default class AppealsTable extends Vue {
         field: 'created_at',
         align: 'left',
         headerClasses: 'text-primary',
+        format: formatDate,
       },
       {
         label: this.$t('columns.address') as string,
@@ -121,6 +128,7 @@ export default class AppealsTable extends Vue {
         field: 'due_date',
         align: 'left',
         headerClasses: 'text-primary',
+        format: formatDate,
       },
       {
         label: this.$t('columns.status') as string,
