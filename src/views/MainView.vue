@@ -65,6 +65,12 @@
     :pagination="pagination"
     @click:row-number="openEditAppealDialog"
   />
+  <EditAppealDialog
+    v-if="editAppealDialogAppeal"
+    :appeal="editAppealDialogAppeal"
+    @edit="getAppeals"
+    v-model="editAppealDialogVisible"
+  />
 
   <div class="mt-36px flex content-center">
     <div class="mr-auto">
@@ -122,6 +128,7 @@ import type {
 } from '@/types';
 import PremiseSelect from '@/components/PremiseSelect.vue';
 import AddAppealDialog from '@/components/MainView/AddAppealDialog.vue';
+import EditAppealDialog from '@/components/MainView/EditAppealDialog.vue';
 
 
 interface UpdateTableParams {
@@ -166,6 +173,7 @@ const rowsPerPageOptions: Option<number>[] = [
     AppealsTable,
     PremiseSelect,
     AddAppealDialog,
+    EditAppealDialog,
   },
 })
 export default class MainView extends Vue {
@@ -278,7 +286,7 @@ export default class MainView extends Vue {
   openEditAppealDialog(appeal: Appeal) {
     this.editAppealDialogAppeal = appeal;
     this.editAppealDialogVisible = true;
-    console.log(appeal);
+    this.$forceUpdate();
   }
 
 

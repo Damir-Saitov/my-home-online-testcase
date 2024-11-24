@@ -52,3 +52,30 @@ export function appealsPost(
     config,
   );
 }
+
+
+export type AppealsPatchData = {
+  premise_id?: Premise['id'],
+  apartment_id?: Apartment['id'],
+  applicant: {
+    last_name?: string,
+    first_name?: string,
+    patronymic_name?: string,
+    username?: string,
+  },
+  description?: string,
+  due_date?: string,
+};
+// export type AppealsPatchResult = {};
+
+export function appealsPatch(
+  id: Appeal['id'],
+  data: AppealsPatchData,
+  config?: AxiosRequestConfig<AppealsPatchData>,
+) {
+  return api.patch(
+    `appeals/v1.0/appeals/${id}/`,
+    data,
+    config,
+  );
+}
